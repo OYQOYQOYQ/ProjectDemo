@@ -13,21 +13,6 @@ public class RescuePrincess : Init
 {
     private readonly string _wall = Blocks;
 
-    private struct Window
-    {
-        public int minX;
-        public int minY;
-        public int maxX;
-        public int maxY;
-
-        public Window()
-        {
-            (minX, minY) = Auxiliary.CalculateMidpoint(ConsoleWindow.Init.WindowHeight, ConsoleWindow.Init.WindowHeight);
-            maxX = minX + ConsoleWindow.Init.WindowWidth;
-            maxY = minY + ConsoleWindow.Init.WindowHeight;
-        }
-    }
-
     private struct RoleProperties
     {
         private readonly int _minRandomX;
@@ -42,18 +27,17 @@ public class RescuePrincess : Init
 
         public RoleProperties(Role role)
         {
-            var window = new Window();
-            _minRandomX = window.minX + 1;
-            _maxRandomX = window.maxX - 1;
+            _minRandomX = ConsoleWindow.Init.Minx + 1;
+            _maxRandomX = ConsoleWindow.Init.MaxX - 1;
             switch (role)
             {
                 case Role.Player:
-                    _minRandomY = window.minY + 1;
-                    _maxRandomY = (window.maxY - 1) / 2;
+                    _minRandomY = ConsoleWindow.Init.Miny + 1;
+                    _maxRandomY = ConsoleWindow.Init.MiddleBar1 / 2;
                     break;
                 case Role.Boss:
-                    _minRandomY = (window.maxY - 1) / 2;
-                    _maxRandomY = window.maxY - 1;
+                    _minRandomY = ConsoleWindow.Init.MiddleBar1 / 2;
+                    _maxRandomY = ConsoleWindow.Init.MiddleBar1;
                     break;
             }
             RandomLocation();
@@ -69,17 +53,17 @@ public class RescuePrincess : Init
 
     protected override void DrawWalls()
     {
-        var window = new Window();
-        for (var x = window.minX; x < window.maxX; x += 2)
+        for (var x = ConsoleWindow.Init.Minx; x <= ConsoleWindow.Init.MaxX; x += 2)
         {
-            Auxiliary.Display(_wall, ConsoleColor.Red, x, window.minY);
-            Auxiliary.Display(_wall, ConsoleColor.Red, x, window.maxY);
+            Auxiliary.Display(_wall, ConsoleColor.Red, x, ConsoleWindow.Init.Miny);
+            Auxiliary.Display(_wall, ConsoleColor.Red, x, ConsoleWindow.Init.MaxY);
+            Auxiliary.Display(_wall, ConsoleColor.Red, x, ConsoleWindow.Init.MiddleBar1);
         }
 
-        for (var y = window.minY; y < window.maxY + 1; y++)
+        for (var y = ConsoleWindow.Init.Miny; y <= ConsoleWindow.Init.MaxY; y++)
         {
-            Auxiliary.Display(_wall, ConsoleColor.Red, window.minX, y);
-            Auxiliary.Display(_wall, ConsoleColor.Red, window.maxX, y);
+            Auxiliary.Display(_wall, ConsoleColor.Red, ConsoleWindow.Init.Minx, y);
+            Auxiliary.Display(_wall, ConsoleColor.Red, ConsoleWindow.Init.MaxX, y);
         }
     }
 
