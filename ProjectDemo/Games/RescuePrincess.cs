@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using ProjectDemo.Tools;
 
 namespace ProjectDemo.Games;
@@ -9,9 +10,19 @@ enum Role
     Princess
 }
 
+enum Move
+{ 
+    Up,
+    Down,
+    Left,
+    Right
+}
+
 public class RescuePrincess : Init
 {
     private readonly string _wall = Blocks;
+    private (int x, int y) _playerLocation;
+    private (int x, int y) _bossLocation;
 
     private struct RoleProperties
     {
@@ -57,7 +68,6 @@ public class RescuePrincess : Init
         {
             Auxiliary.Display(_wall, ConsoleColor.Red, x, ConsoleWindow.Init.Miny);
             Auxiliary.Display(_wall, ConsoleColor.Red, x, ConsoleWindow.Init.MaxY);
-            Auxiliary.Display(_wall, ConsoleColor.Red, x, ConsoleWindow.Init.MiddleBar1);
         }
 
         for (var y = ConsoleWindow.Init.Miny; y <= ConsoleWindow.Init.MaxY; y++)
@@ -67,22 +77,90 @@ public class RescuePrincess : Init
         }
     }
 
+    protected void DrawMiddleBar()
+    {
+        for (var x = ConsoleWindow.Init.Minx; x <= ConsoleWindow.Init.MaxX; x += 2)
+        {
+            Auxiliary.Display(_wall, ConsoleColor.Red, x, ConsoleWindow.Init.MiddleBar1);
+        }
+    }
+
     private void DrawRole()
     {
         var player = new RoleProperties(Role.Player);
         var boss = new RoleProperties(Role.Boss);
+        _playerLocation = player.Location;
+        _bossLocation = boss.Location;
         Auxiliary.Display(player.Player, ConsoleColor.Green, player.Location.x, player.Location.y);
         Auxiliary.Display(boss.Boss, ConsoleColor.Red, boss.Location.x, boss.Location.y);
+    }
+
+    private bool PlayerMoveScope(int x, int y)
+    {
+        if (x <= ConsoleWindow.Init.Minx || x >= ConsoleWindow.Init.MaxX ||
+            y <= ConsoleWindow.Init.Miny || y >= ConsoleWindow.Init.MiddleBar1)
+        {
+            return false;
+        }
+        return (x != _bossLocation.x) || (y != _bossLocation.y);
+    }
+
+    private void PlayerMove(int x, int y, Move move)
+    {
+        int oldPlayerX = x;
+        int oldPlayerY = y;
+        switch (move)
+        {
+            case Move.Up:
+                y--;
+                break;
+            case Move.Down:
+                y++;
+                break;
+            case Move.Left:
+                x--;
+                break;
+            case Move.Right:
+                x++;
+                break;
+        }
+
+        if (PlayerMoveScope(x, y))
+        {
+            Auxiliary.Display(" ", ConsoleColor.White, oldPlayerX, oldPlayerY);
+            Auxiliary.Display(Round, ConsoleColor.Green, x, y);
+            _playerLocation = (x, y);
+        }
     }
 
     public override void Run()
     {
         Console.Clear();
         DrawWalls();
+        DrawMiddleBar();
         DrawRole();
+
         while (true)
         {
-            // Game logic goes here
+            var key = Console.ReadKey(true);
+            int x = _playerLocation.x;
+            int y = _playerLocation.y;
+
+            switch (key.Key)
+            {
+                case ConsoleKey.W:
+                    PlayerMove(x, y, Move.Up);
+                    break;
+                case ConsoleKey.S:
+                    PlayerMove(x, y, Move.Down);
+                    break;
+                case ConsoleKey.A:
+                    PlayerMove(x, y, Move.Left);
+                    break;
+                case ConsoleKey.D:
+                    PlayerMove(x, y, Move.Right);
+                    break;
+            }
         }
     }
 }
