@@ -1,9 +1,12 @@
 .idea/
 .vscode/
 .DS_Store
+global.json
 ProjectDemo/bin/
 ProjectDemo/obj/
 
+
+*.user
 *.exe
 *.dll
 *.pdb

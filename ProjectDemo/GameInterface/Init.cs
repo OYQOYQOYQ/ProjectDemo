@@ -48,17 +48,17 @@ public abstract class Init<E> where E : struct
     protected int EndGameTextIntervalXCopy { get; set; }
     protected int EndGameTextIntervalYCopy { get => _endGameTextIntervalYCopy; set => _endGameTextIntervalYCopy = value + 10; }
     // Text 汇总
-    protected string StartInterfaceTitle => "小游戏集合";
-    protected string GameOptionTitle => "游戏列表";
-    protected string EndInterfaceTitle1 => "游戏胜利";
-    protected string EndInterfaceTitle2 => "游戏失败";
-    protected string PlayGameText => "开始游戏";
-    protected string EndGameText => "退出游戏";
-    protected string BackMenuText => "返回菜单";
-    protected string Game1Text => "1.营救公主 ";
-    protected string Game2Text => "2.飞行棋  ";
-    protected string Game3Text => "3.贪吃蛇  ";
-    protected string Game4Text => "4.俄罗斯方块";
+    protected static string StartInterfaceTitle => "小游戏集合";
+    protected static string GameOptionTitle => "游戏列表";
+    protected static string EndInterfaceTitle1 => "游戏胜利";
+    protected static string EndInterfaceTitle2 => "游戏失败";
+    protected static string PlayGameText => "开始游戏";
+    protected static string EndGameText => "退出游戏";
+    protected static string BackMenuText => "返回菜单";
+    protected static string Game1Text => "1.营救公主 ";
+    protected static string Game2Text => "2.飞行棋  ";
+    protected static string Game3Text => "3.贪吃蛇  ";
+    protected static string Game4Text => "4.俄罗斯方块";
 
     /// <summary>
     /// 计算 Text 在终端中间的坐标

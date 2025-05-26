@@ -1,5 +1,5 @@
-using System.Runtime.InteropServices;
 using ProjectDemo.Tools;
+using ProjectDemo.Games;
 
 namespace ProjectDemo.GameInterface;
 
@@ -86,15 +86,21 @@ public class GameOptionInterface : Init<GameOption>
             {
                 case ConsoleKey.W:
                 case ConsoleKey.UpArrow:
-                    bool minOption = GameOption.Game1 >= CurrentOption--; 
-                    CurrentOption = minOption ? GameOption.Game1 : CurrentOption--;
+                    bool minOption = GameOption.Game1 >= CurrentOption - 1; 
+                    CurrentOption = minOption ? GameOption.Game1 : --CurrentOption;
                     break;
                 case ConsoleKey.S:
                 case ConsoleKey.DownArrow:
-                    bool maxOption = GameOption.Game4 >= CurrentOption++;
-                    CurrentOption = maxOption ? CurrentOption++ : GameOption.Game4;
+                    bool maxOption = GameOption.Game4 >= CurrentOption + 1;
+                    CurrentOption = maxOption ? ++CurrentOption : GameOption.Game4;
                     break;
                 case ConsoleKey.Enter:
+                    if (CurrentOption == GameOption.Game1)
+                    
+                    {
+                        var game1 = new RescuePrincess();
+                        game1.Run();
+                    }
                     return State.End;
             }
             HighlightSelection();
