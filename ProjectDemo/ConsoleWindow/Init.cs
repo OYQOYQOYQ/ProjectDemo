@@ -10,7 +10,7 @@ public static class Init
     public static int MaxX;
     public static int Miny;
     public static int MaxY;
-    public static int MiddleBar1 => WindowHeight - 5;
+    public static int MiddleBar1 => WindowHeight - 4;
     public static int MiddleBar2 => WindowHeight - 10;
 
     static Init()

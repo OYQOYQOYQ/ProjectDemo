@@ -21,18 +21,13 @@ class Program
         while (true)
         {
             Console.Clear();
-            switch (state)
+            state = state switch
             {
-                case State.Start:
-                    state = start.SelectProcessing();
-                    break;
-                case State.Run:
-                    state = run.SelectProcessing();
-                    break;
-                case State.End:
-                    state = end.SelectProcessing();
-                    break;
-            }
+                State.Start => start.SelectProcessing(),
+                State.Run => run.SelectProcessing(),
+                State.End => end.SelectProcessing(),
+                _ => state
+            };
         }
     }
 }

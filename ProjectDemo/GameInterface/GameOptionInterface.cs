@@ -95,11 +95,20 @@ public class GameOptionInterface : Init<GameOption>
                     CurrentOption = maxOption ? ++CurrentOption : GameOption.Game4;
                     break;
                 case ConsoleKey.Enter:
-                    if (CurrentOption == GameOption.Game1)
-                    
+                    if (CurrentOption == GameOption.Game1) 
                     {
                         var game1 = new RescuePrincess();
                         game1.Run();
+                    }
+                    else if (CurrentOption == GameOption.Game2)
+                    {
+                        
+                    }
+                    else if (CurrentOption == GameOption.Game3)
+                    {
+                    }
+                    else if (CurrentOption == GameOption.Game4)
+                    {
                     }
                     return State.End;
             }

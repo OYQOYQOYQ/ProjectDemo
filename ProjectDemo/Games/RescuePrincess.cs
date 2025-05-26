@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+using System.Reflection.Metadata;
 using ProjectDemo.Tools;
 
 namespace ProjectDemo.Games;
@@ -23,6 +23,11 @@ public class RescuePrincess : Init
     private readonly string _wall = Blocks;
     private (int x, int y) _playerLocation;
     private (int x, int y) _bossLocation;
+    private int _playerHp = 100;
+    private int _bossHp = 100;
+    private string _victoryText1 = "你战胜了 Boss，快去营救公主吧";
+    private string _victoryText2 = "前往公主身边按 J 键营救公主";
+    private string _failText = "你被 Boss 打败了，公主被 Boss 抓走了";
 
     private struct RoleProperties
     {
@@ -91,8 +96,8 @@ public class RescuePrincess : Init
         var boss = new RoleProperties(Role.Boss);
         _playerLocation = player.Location;
         _bossLocation = boss.Location;
-        Auxiliary.Display(player.Player, ConsoleColor.Green, player.Location.x, player.Location.y);
-        Auxiliary.Display(boss.Boss, ConsoleColor.Red, boss.Location.x, boss.Location.y);
+        Auxiliary.Display(player.Player, ConsoleColor.Yellow, player.Location.x, player.Location.y);
+        Auxiliary.Display(boss.Boss, ConsoleColor.Green, boss.Location.x, boss.Location.y);
     }
 
     private bool PlayerMoveScope(int x, int y)
@@ -127,9 +132,69 @@ public class RescuePrincess : Init
 
         if (PlayerMoveScope(x, y))
         {
-            Auxiliary.Display(" ", ConsoleColor.White, oldPlayerX, oldPlayerY);
-            Auxiliary.Display(Round, ConsoleColor.Green, x, y);
+            Auxiliary.Display(" ", ConsoleColor.Yellow, oldPlayerX, oldPlayerY);
+            Auxiliary.Display(Round, ConsoleColor.Yellow, x, y);
             _playerLocation = (x, y);
+        }
+    }
+
+    private (bool isGameOver, Role? role) IsGameOver()
+    {
+        if (_playerHp <= 0 || _bossHp <= 0)
+        {
+            if (_playerHp <= 0 && _bossHp <= 0)
+            {
+                Role who = _playerHp > _bossHp ? Role.Player : Role.Boss;
+                return (true, who);
+            }
+            return (true, _bossHp <= 0 ? Role.Player : Role.Boss);
+        }
+        return (false, null);
+    }
+
+    private bool IsBossBeside()
+    { 
+        if (_playerLocation.x == _bossLocation.x && 
+            (_playerLocation.y == _bossLocation.y - 1 || _playerLocation.y == _bossLocation.y + 1))
+        {
+            return true;
+        }
+        else if (_playerLocation.y == _bossLocation.y && 
+                 (_playerLocation.x == _bossLocation.x - 1 || _playerLocation.x == _bossLocation.x + 1))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private (int playerAtkHarm, int bossAtkHarm) PlayerBossAtk()
+    { 
+        int playerAtk = Random.Shared.Next(1, 11);
+        int bossAtk = Random.Shared.Next(1, 11);
+        _bossHp -= playerAtk;
+        _playerHp -= bossAtk;
+        return (playerAtk, bossAtk);
+    }
+
+    private void DisplayFightingText(int playerAtkHarm, int bossAtkHarm)
+    {
+        string titleText = "开始和 Boss 战斗，按 J 键继续";
+        string playerHpText = $"你对 Boss 造成{playerAtkHarm}点伤害，Boss 血量为{_bossHp}";
+        string bossHpText = $"Boss 对你造成{bossAtkHarm}点伤害，你血量为{_playerHp}";
+
+        Auxiliary.Display(titleText, ConsoleColor.White, ConsoleWindow.Init.Minx + 1, ConsoleWindow.Init.MiddleBar1 + 1);
+        Auxiliary.Display(playerHpText, ConsoleColor.Yellow, ConsoleWindow.Init.Minx + 1, ConsoleWindow.Init.MiddleBar1 + 2);
+        Auxiliary.Display(bossHpText, ConsoleColor.Green, ConsoleWindow.Init.Minx + 1, ConsoleWindow.Init.MiddleBar1 + 3);
+    }
+
+    private void ClearFightingText()
+    {
+        for (var i = 1; i <= 3; i++)
+        {
+            for (var x = ConsoleWindow.Init.Minx + 1; x <= ConsoleWindow.Init.MaxX - 2; x++)
+            {
+                Auxiliary.Display(" ", ConsoleColor.White, x, ConsoleWindow.Init.MiddleBar1 + i);
+            }
         }
     }
 
@@ -139,9 +204,28 @@ public class RescuePrincess : Init
         DrawWalls();
         DrawMiddleBar();
         DrawRole();
+        int isClearText = -1;
 
         while (true)
         {
+            var (isGameOver, role) = IsGameOver();
+            if (isGameOver)
+            { 
+                ClearFightingText();
+                if (role == Role.Player)
+                {
+                    Auxiliary.Display(_victoryText1, ConsoleColor.Green, ConsoleWindow.Init.Minx + 1, ConsoleWindow.Init.MiddleBar1 + 1);
+                    Auxiliary.Display(_victoryText2, ConsoleColor.Green, ConsoleWindow.Init.Minx + 1, ConsoleWindow.Init.MiddleBar1 + 2);
+                    Thread.Sleep(1500);
+                }
+                else if (role == Role.Boss)
+                {
+                    Auxiliary.Display(_failText, ConsoleColor.Red, ConsoleWindow.Init.Minx + 1, ConsoleWindow.Init.MiddleBar1 + 1);
+                    Thread.Sleep(3000);
+                }
+                break;
+            }
+
             var key = Console.ReadKey(true);
             int x = _playerLocation.x;
             int y = _playerLocation.y;
@@ -149,16 +233,29 @@ public class RescuePrincess : Init
             switch (key.Key)
             {
                 case ConsoleKey.W:
+                case ConsoleKey.UpArrow:
                     PlayerMove(x, y, Move.Up);
                     break;
                 case ConsoleKey.S:
+                case ConsoleKey.DownArrow:
                     PlayerMove(x, y, Move.Down);
                     break;
                 case ConsoleKey.A:
+                case ConsoleKey.LeftArrow:
                     PlayerMove(x, y, Move.Left);
                     break;
                 case ConsoleKey.D:
+                case ConsoleKey.RightArrow:
                     PlayerMove(x, y, Move.Right);
+                    break;
+                case ConsoleKey.J:
+                    if (IsBossBeside())
+                    {
+                        if (isClearText >= 1) ClearFightingText();
+                        var (playerAtk, bossAtk) = PlayerBossAtk();
+                        DisplayFightingText(playerAtk, bossAtk);
+                        isClearText++;
+                    }
                     break;
             }
         }
