@@ -1,6 +1,6 @@
 namespace ProjectDemo.GameInterface;
 
-public abstract class Init<E> where E : struct
+public abstract class Init<E> where E : struct, Enum
 {
     protected E CurrentOption;
     protected bool IsGameVictory = true;

@@ -23,11 +23,14 @@ public class RescuePrincess : Init
     private readonly string _wall = Blocks;
     private (int x, int y) _playerLocation;
     private (int x, int y) _bossLocation;
+    private (int x, int y) _princessLocation;
     private int _playerHp = 100;
     private int _bossHp = 100;
     private string _victoryText1 = "你战胜了 Boss，快去营救公主吧";
     private string _victoryText2 = "前往公主身边按 J 键营救公主";
     private string _failText = "你被 Boss 打败了，公主被 Boss 抓走了";
+    private bool _isGameOver = false;
+    private bool _isGeneratePrincess = true;
 
     private struct RoleProperties
     {
@@ -54,6 +57,10 @@ public class RescuePrincess : Init
                 case Role.Boss:
                     _minRandomY = ConsoleWindow.Init.MiddleBar1 / 2;
                     _maxRandomY = ConsoleWindow.Init.MiddleBar1;
+                    break;
+                case Role.Princess:
+                    _minRandomY = ConsoleWindow.Init.Miny + 1;
+                    _maxRandomY = ConsoleWindow.Init.MiddleBar1 / 2;
                     break;
             }
             RandomLocation();
@@ -90,8 +97,16 @@ public class RescuePrincess : Init
         }
     }
 
-    private void DrawRole()
+    private void DrawRole(bool isVictory = false)
     {
+        if (isVictory)
+        {
+            var princess = new RoleProperties(Role.Princess);
+            _princessLocation = princess.Location;
+            Auxiliary.Display(princess.Princess, ConsoleColor.Cyan, princess.Location.x, princess.Location.y);
+            return;
+        }
+
         var player = new RoleProperties(Role.Player);
         var boss = new RoleProperties(Role.Boss);
         _playerLocation = player.Location;
@@ -107,7 +122,15 @@ public class RescuePrincess : Init
         {
             return false;
         }
-        return (x != _bossLocation.x) || (y != _bossLocation.y);
+        if (x == _bossLocation.x && y == _bossLocation.y)
+        {
+            return false;
+        }
+        if (_isGameOver && (x == _princessLocation.x && y == _princessLocation.y))
+        {
+            return false;
+        }
+        return true;
     }
 
     private void PlayerMove(int x, int y, Move move)
@@ -167,8 +190,23 @@ public class RescuePrincess : Init
         return false;
     }
 
+    private bool IsPrincessBeside()
+    {
+        if (_playerLocation.x == _princessLocation.x && 
+            (_playerLocation.y == _princessLocation.y - 1 || _playerLocation.y == _princessLocation.y + 1))
+        {
+            return true;
+        }
+        else if (_playerLocation.y == _princessLocation.y && 
+                 (_playerLocation.x == _princessLocation.x - 1 || _playerLocation.x == _princessLocation.x + 1))
+        {
+            return true;
+        }
+        return false;
+    }
+
     private (int playerAtkHarm, int bossAtkHarm) PlayerBossAtk()
-    { 
+    {
         int playerAtk = Random.Shared.Next(1, 11);
         int bossAtk = Random.Shared.Next(1, 11);
         _bossHp -= playerAtk;
@@ -211,19 +249,26 @@ public class RescuePrincess : Init
             var (isGameOver, role) = IsGameOver();
             if (isGameOver)
             { 
+                _isGameOver = true;
                 ClearFightingText();
                 if (role == Role.Player)
                 {
+                    Auxiliary.Display(" ", ConsoleColor.Yellow, _bossLocation.x, _bossLocation.y);
                     Auxiliary.Display(_victoryText1, ConsoleColor.Green, ConsoleWindow.Init.Minx + 1, ConsoleWindow.Init.MiddleBar1 + 1);
                     Auxiliary.Display(_victoryText2, ConsoleColor.Green, ConsoleWindow.Init.Minx + 1, ConsoleWindow.Init.MiddleBar1 + 2);
-                    Thread.Sleep(1500);
+                    _bossLocation = (0, 0);
+                    if (_isGeneratePrincess)
+                    { 
+                        DrawRole(true);
+                        _isGeneratePrincess = false;
+                    }
                 }
                 else if (role == Role.Boss)
                 {
                     Auxiliary.Display(_failText, ConsoleColor.Red, ConsoleWindow.Init.Minx + 1, ConsoleWindow.Init.MiddleBar1 + 1);
                     Thread.Sleep(3000);
+                    break;
                 }
-                break;
             }
 
             var key = Console.ReadKey(true);
@@ -255,6 +300,13 @@ public class RescuePrincess : Init
                         var (playerAtk, bossAtk) = PlayerBossAtk();
                         DisplayFightingText(playerAtk, bossAtk);
                         isClearText++;
+                    }
+                    else if (_isGameOver && IsPrincessBeside())
+                    {
+                        ClearFightingText();
+                        Auxiliary.Display("你成功营救了公主，游戏结束", ConsoleColor.Cyan, ConsoleWindow.Init.Minx + 1, ConsoleWindow.Init.MiddleBar1 + 1);
+                        Thread.Sleep(2000);
+                        return;
                     }
                     break;
             }
